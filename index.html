@@ -100,8 +100,13 @@
           body: JSON.stringify({ question: q })
         });
 
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
         const data = await response.json();
         answerBox.innerText = "> " + data.answer;
+
       } catch (err) {
         console.error(err);
         answerBox.innerText = "The Oracle has vanished into the shadows...";
