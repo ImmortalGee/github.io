@@ -15,11 +15,18 @@
       flex-direction: column;
       margin: 0;
       text-align: center;
+      overflow: hidden;
     }
 
     h1 {
       font-size: 3rem;
       text-shadow: 0 0 10px #0f0, 0 0 20px #0a0;
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #0f0, 0 0 20px #0a0; }
+      to { text-shadow: 0 0 20px #0f0, 0 0 40px #0a0; }
     }
 
     #questionBox {
@@ -62,11 +69,12 @@
       text-align: left;
       white-space: pre-wrap;
       font-size: 1.1rem;
+      min-height: 50px;
     }
   </style>
 </head>
 <body>
-  <h1>?? Ask The Oracle ??</h1>
+  <h1>🔮 Ask The Oracle 🔮</h1>
   <div id="questionBox">
     <input type="text" id="question" placeholder="Ask your question...">
     <button onclick="answerQuestion()">Ask</button>
@@ -74,7 +82,7 @@
   <div id="answer"></div>
 
   <script>
-    function answerQuestion() {
+    async function answerQuestion() {
       const q = document.getElementById("question").value;
       const answerBox = document.getElementById("answer");
 
@@ -83,17 +91,21 @@
         return;
       }
 
-      // Placeholder response for now
-      const responses = [
-        "The shadows whisper: yes.",
-        "The darkness says no.",
-        "It is uncertain... ask again later.",
-        "The truth hides within yourself.",
-        "The Oracle cannot see that path clearly."
-      ];
+      answerBox.innerText = "The Oracle is pondering...";
 
-      const random = Math.floor(Math.random() * responses.length);
-      answerBox.innerText = "> " + responses[random];
+      try {
+        const response = await fetch("/.netlify/functions/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: q })
+        });
+
+        const data = await response.json();
+        answerBox.innerText = "> " + data.answer;
+      } catch (err) {
+        console.error(err);
+        answerBox.innerText = "The Oracle has vanished into the shadows...";
+      }
     }
   </script>
 </body>
