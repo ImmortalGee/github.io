@@ -1,3 +1,5 @@
+import fetch from "node-fetch"; // Only needed if using Node 18- before
+
 export async function handler(event) {
   const body = JSON.parse(event.body);
   const question = body.question;
@@ -15,6 +17,7 @@ export async function handler(event) {
   });
 
   const data = await res.json();
+
   return {
     statusCode: 200,
     body: JSON.stringify({ answer: data.choices[0].message.content })
