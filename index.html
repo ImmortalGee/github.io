@@ -5,40 +5,46 @@
   <title>The Oracle</title>
   <style>
     body {
-      background-color: #000;
-      color: #0f0;
+      margin: 0;
+      padding: 0;
+      background: #000;
       font-family: "Courier New", monospace;
+      color: #0f0;
+      overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       flex-direction: column;
-      margin: 0;
       text-align: center;
-      overflow: hidden;
     }
 
+    /* Glowing title */
     h1 {
       font-size: 3rem;
-      text-shadow: 0 0 10px #0f0, 0 0 20px #0a0;
+      text-shadow: 0 0 10px #0f0, 0 0 20px #0a0, 0 0 30px #0f0;
       animation: glow 2s infinite alternate;
+      z-index: 1;
     }
 
     @keyframes glow {
-      from { text-shadow: 0 0 10px #0f0, 0 0 20px #0a0; }
-      to { text-shadow: 0 0 20px #0f0, 0 0 40px #0a0; }
+      from { text-shadow: 0 0 10px #0f0, 0 0 20px #0a0, 0 0 30px #0f0; }
+      to { text-shadow: 0 0 20px #0f0, 0 0 40px #0a0, 0 0 60px #0f0; }
     }
 
+    /* Question box */
     #questionBox {
       width: 80%;
       max-width: 500px;
       margin-top: 20px;
+      position: relative;
+      z-index: 1;
     }
 
     input {
       width: 100%;
       padding: 10px;
-      background: #111;
+      background: rgba(0,0,0,0.7);
       border: 1px solid #0f0;
       color: #0f0;
       font-size: 1rem;
@@ -49,7 +55,7 @@
     button {
       margin-top: 15px;
       padding: 10px 20px;
-      background: #111;
+      background: rgba(0,0,0,0.7);
       border: 1px solid #0f0;
       color: #0f0;
       font-size: 1rem;
@@ -70,10 +76,21 @@
       white-space: pre-wrap;
       font-size: 1.1rem;
       min-height: 50px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Canvas for mist effect */
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
     }
   </style>
 </head>
 <body>
+  <canvas id="mist"></canvas>
   <h1>🔮 Ask The Oracle 🔮</h1>
   <div id="questionBox">
     <input type="text" id="question" placeholder="Ask your question...">
@@ -82,6 +99,7 @@
   <div id="answer"></div>
 
   <script>
+    // ====== AI Function ======
     async function answerQuestion() {
       const q = document.getElementById("question").value;
       const answerBox = document.getElementById("answer");
@@ -100,9 +118,7 @@
           body: JSON.stringify({ question: q })
         });
 
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
+        if (!response.ok) throw new Error("Network error");
 
         const data = await response.json();
         answerBox.innerText = "> " + data.answer;
@@ -112,6 +128,43 @@
         answerBox.innerText = "The Oracle has vanished into the shadows...";
       }
     }
+
+    // ====== Mist Effect ======
+    const canvas = document.getElementById("mist");
+    const ctx = canvas.getContext("2d");
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    const particles = [];
+    for (let i = 0; i < 100; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: Math.random() * 50 + 20,
+        alpha: Math.random() * 0.2 + 0.05,
+        speed: Math.random() * 0.5 + 0.2
+      });
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.y -= p.speed;
+        if (p.y + p.radius < 0) p.y = height + p.radius;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2);
+        ctx.fillStyle = "rgba(0,255,0," + p.alpha + ")";
+        ctx.fill();
+      });
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
   </script>
 </body>
 </html>
